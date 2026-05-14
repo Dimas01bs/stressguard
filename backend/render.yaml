@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: deteksi-stres-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MODEL_PROVIDER
+        value: heuristic
+      - key: MODEL_VERSION
+        value: heuristic-v1
