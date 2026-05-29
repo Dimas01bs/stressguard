@@ -25,12 +25,22 @@ function renderRecommendation(item) {
           const headingMatch = normalizedLine.match(
             /^\*\*(\d+\.\s*.+?)\*\*$/,
           );
+          const bulletMatch = normalizedLine.match(/^\*\s*(.+)$/);
 
           if (headingMatch) {
             return (
               <h4 key={`${normalizedLine}-${index}`}>
                 {headingMatch[1]}
               </h4>
+            );
+          }
+
+          if (bulletMatch) {
+            return (
+              <div className="recommendation-bullet" key={`${normalizedLine}-${index}`}>
+                <span aria-hidden="true" />
+                <p>{renderInlineMarkdown(bulletMatch[1])}</p>
+              </div>
             );
           }
 
@@ -126,13 +136,6 @@ export function PredictionResult({ result }) {
       </div>
 
       <div className="result-card-stack">
-        <div className="result-mini-card">
-          <span>Model</span>
-          <strong>
-            {result.modelProvider} / {result.modelVersion}
-          </strong>
-        </div>
-
         <div className="result-mini-card">
           <span>Input</span>
           <strong>

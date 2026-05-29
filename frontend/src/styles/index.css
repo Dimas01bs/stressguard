@@ -1858,7 +1858,7 @@ button {
 }
 
 .recommendation-card {
-  padding: 20px;
+  padding: 24px;
   border: 1.4px solid rgba(23, 23, 23, 0.08);
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.72);
@@ -1867,22 +1867,27 @@ button {
 
 .recommendation-content {
   display: grid;
-  gap: 12px;
+  gap: 14px;
+  max-width: 76ch;
   color: #1f2933;
-  font-size: 0.98rem;
-  line-height: 1.68;
+  font-size: 0.96rem;
+  line-height: 1.72;
 }
 
 .recommendation-content h4 {
-  margin: 10px 0 0;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(23, 23, 23, 0.08);
   color: #111827;
   font-family: "Sora", sans-serif;
-  font-size: 1rem;
+  font-size: 1.02rem;
   line-height: 1.35;
 }
 
 .recommendation-content h4:first-child {
   margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .recommendation-content p {
@@ -1892,6 +1897,21 @@ button {
 .recommendation-content strong {
   color: #111827;
   font-weight: 900;
+}
+
+.recommendation-bullet {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.recommendation-bullet > span {
+  width: 8px;
+  height: 8px;
+  margin-top: 0.72em;
+  border-radius: 999px;
+  background: #111827;
 }
 
 .result-phone .result-cta {
