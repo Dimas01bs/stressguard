@@ -41,6 +41,10 @@ function getFieldAccent(fieldName) {
   return accentMap[fieldName] || "pink";
 }
 
+function shouldUseWideField(field) {
+  return field.type === "textarea" || field.name === "phoneUsageBeforeSleepMinutes";
+}
+
 export function SleepForm({
   fields,
   values,
@@ -51,18 +55,9 @@ export function SleepForm({
   onChange,
   onSubmit
 }) {
-  const moods = ["😣", "😕", "🙂", "😊", "😌"];
-
   return (
     <section className="phone-card form-phone" id="assessment" aria-labelledby="assessment-title">
       <div className="phone-top-copy">
-        <div className="mood-row" aria-hidden="true">
-          {moods.map((mood) => (
-            <span key={mood} className="mood-bubble">
-              {mood}
-            </span>
-          ))}
-        </div>
         <span className="section-label">Activities</span>
         <h2 id="assessment-title">Sleep check-in</h2>
         <p>
@@ -85,7 +80,7 @@ export function SleepForm({
       <form className="sleep-form" onSubmit={onSubmit}>
         <div className="form-grid">
           {fields.map((field) => {
-            const isWide = field.type === "textarea";
+            const isWide = shouldUseWideField(field);
             const value = values[field.name] ?? "";
             const error = errors[field.name];
             const accent = getFieldAccent(field.name);
@@ -93,7 +88,7 @@ export function SleepForm({
             return (
               <label
                 key={field.name}
-                className={`field-card accent-${accent} ${isWide ? "field-card-wide" : ""} ${
+                className={`field-card field-card-${field.name} accent-${accent} ${isWide ? "field-card-wide" : ""} ${
                   error ? "field-card-error" : ""
                 }`}
               >

@@ -1,31 +1,23 @@
-import { API_BASE_URL } from "../lib/api";
 import { formatDate, getStressTone } from "../lib/formatters";
 import { MeditationIllustration } from "./Illustrations";
 
-export function HeroSection({ health, latestPrediction, onPrimaryClick }) {
+export function HeroSection({ health, user, latestPrediction, onPrimaryClick }) {
   const latestTone = latestPrediction
     ? getStressTone(latestPrediction.stressLevel)
     : "low";
+  const displayName =
+    user?.name ||
+    user?.email?.split("@")[0] ||
+    "teman";
 
   return (
     <section className="phone-card hero-phone" aria-labelledby="hero-title">
-      <div className="phone-toolbar">
-        <button type="button" className="icon-button" aria-label="Kembali">
-          ←
-        </button>
-        <div className="sound-pill">
-          <span>♫</span>
-          Ocean breeze
-          <span>⌄</span>
-        </div>
-      </div>
-
       <div className="hero-copy">
-        <span className="hero-overline">5 minutes</span>
-        <h1 id="hero-title">Breathing meditation</h1>
+        <span className="hero-overline">Selamat datang</span>
+        <h1 id="hero-title">Halo, {displayName}</h1>
         <p>
-          Ritual singkat untuk membaca kondisi tidur, menenangkan ritme napas,
-          dan masuk ke asesmen stres dengan nuansa yang lebih lembut.
+          Pantau ringkasan stres dan mulai asesmen tidur hari ini dari satu
+          ruang kerja yang lebih tenang.
         </p>
       </div>
 
@@ -56,18 +48,9 @@ export function HeroSection({ health, latestPrediction, onPrimaryClick }) {
       </div>
 
       <div className="hero-footer">
-        <div>
-          <span className="hero-breath">Inhale...</span>
-          <p>{health.message}</p>
-        </div>
         <button type="button" className="hero-play" onClick={onPrimaryClick}>
-          Start
+          Mulai asesmen
         </button>
-      </div>
-
-      <div className="hero-inline-meta">
-        <span>API</span>
-        <strong>{API_BASE_URL}</strong>
       </div>
     </section>
   );

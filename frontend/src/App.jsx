@@ -1,7 +1,15 @@
 import { startTransition, useEffect, useState } from "react";
 import {
+  BookOpen,
+  ClipboardList,
+  Home,
+  LayoutDashboard,
+  LogOut,
+} from "lucide-react";
+import {
   createPrediction,
   getDashboardSummary,
+  getCurrentUser,
   getFormMeta,
   getPredictionHistory,
   healthCheck,
@@ -30,6 +38,67 @@ const defaultHistoryMeta = {
 };
 
 const googleRedirectPendingKey = "stressguard-google-redirect-pending";
+
+const dashboardNavItems = [
+  {
+    label: "Home",
+    href: "#top",
+    icon: Home,
+  },
+  {
+    label: "Asesmen",
+    href: "#assessment",
+    icon: ClipboardList,
+  },
+  {
+    label: "Dashboard",
+    href: "#dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Journal",
+    href: "#history",
+    icon: BookOpen,
+  },
+];
+
+function DashboardSidebar({ onAssessment, onLogout }) {
+  return (
+    <aside className="dashboard-sidebar" aria-label="Dashboard navigation">
+      <div className="dashboard-sidebar-brand">
+        <div className="dashboard-sidebar-logo">SG</div>
+        <div>
+          <strong>StressGuard</strong>
+          <span>AI wellness companion</span>
+        </div>
+      </div>
+
+      <nav className="dashboard-sidebar-nav">
+        {dashboardNavItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <a href={item.href} key={item.label}>
+              <Icon size={18} />
+              <span>{item.label}</span>
+            </a>
+          );
+        })}
+      </nav>
+
+      <div className="dashboard-sidebar-actions">
+        <button type="button" className="dashboard-sidebar-primary" onClick={onAssessment}>
+          Cek Stres
+        </button>
+
+        <button type="button" className="dashboard-sidebar-logout" onClick={onLogout}>
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+  );
+}
 
 function App() {
   const [showLogin, setShowLogin] = useState(false);
@@ -67,6 +136,7 @@ function App() {
   useEffect(() => {
     const bootstrap = async () => {
       await Promise.allSettled([
+        loadCurrentUser(),
         loadHealth(),
         loadFormMetadata(),
         loadDashboard(),
@@ -76,6 +146,21 @@ function App() {
 
     bootstrap();
   }, []);
+
+  async function loadCurrentUser() {
+    if (!localStorage.getItem("token")) {
+      return;
+    }
+
+    try {
+      const response = await getCurrentUser();
+      setCurrentUser(response.data);
+    } catch (error) {
+      localStorage.removeItem("token");
+      setCurrentUser(null);
+      setShowApp(false);
+    }
+  }
 
   async function loadHealth() {
     try {
@@ -268,7 +353,10 @@ function App() {
 }
 
   return (
-    <div className={`app-shell${showLogin ? " login-shell" : ""}`} id="top">
+    <div
+      className={`app-shell${showLogin ? " login-shell" : ""}${showApp ? " dashboard-shell" : ""}`}
+      id="top"
+    >
       {!showLogin && (
         <>
           <div className="ambient-line ambient-line-one" aria-hidden="true" />
@@ -277,13 +365,20 @@ function App() {
           <div className="ambient-glow ambient-glow-two" aria-hidden="true" />
         </>
       )}
-      <div className="page-shell">
-        {!showLogin && (
+      <div className={`page-shell${showApp ? " dashboard-layout" : ""}`}>
+        {!showLogin && !showApp && (
           <AppNavbar
             health={health}
             showApp={showApp}
             onStart={scrollToAssessment}
             currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+        )}
+
+        {showApp && (
+          <DashboardSidebar
+            onAssessment={scrollToAssessment}
             onLogout={handleLogout}
           />
         )}
@@ -313,6 +408,7 @@ function App() {
             <>
               <HeroSection
                 health={health}
+                user={currentUser}
                 latestPrediction={
                   dashboard?.latestPrediction || latestPrediction
                 }

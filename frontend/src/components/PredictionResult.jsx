@@ -12,11 +12,52 @@ function renderRecommendation(item) {
     return item;
   }
 
-  return item.split("\n").map((line, index) => (
-    <p key={`${line}-${index}`}>
-      {line}
-    </p>
-  ));
+  return (
+    <div className="recommendation-content">
+      {item
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line && line !== "---")
+        .map((line, index) => {
+          const normalizedLine = line
+            .replace(/\*\*\*/g, "**")
+            .replace(/^#{1,6}\s*/, "");
+          const headingMatch = normalizedLine.match(
+            /^\*\*(\d+\.\s*.+?)\*\*$/,
+          );
+
+          if (headingMatch) {
+            return (
+              <h4 key={`${normalizedLine}-${index}`}>
+                {headingMatch[1]}
+              </h4>
+            );
+          }
+
+          return (
+            <p key={`${normalizedLine}-${index}`}>
+              {renderInlineMarkdown(normalizedLine)}
+            </p>
+          );
+        })}
+    </div>
+  );
+}
+
+function renderInlineMarkdown(text) {
+  const parts = text.split(/(\*\*.*?\*\*)/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={`${part}-${index}`}>
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    return part;
+  });
 }
 
 export function PredictionResult({ result }) {

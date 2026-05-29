@@ -3,7 +3,6 @@ import {
   formatDateTime,
   getStressTone,
 } from "../lib/formatters";
-import { AvatarBadge } from "./Illustrations";
 
 export function HistoryPanel({
   entries,
@@ -15,29 +14,12 @@ export function HistoryPanel({
   onFilterChange,
   onRefresh,
 }) {
-  const latestEntry = entries[0];
-  const headlineNote =
-    latestEntry?.notes ||
-    "Sometimes it feels like no matter what we do, the body still asks us to slow down first.";
-
   return (
     <section
       className="phone-card journal-phone"
       id="history"
       aria-labelledby="history-title"
     >
-      <div className="journal-topbar">
-        <AvatarBadge />
-        <button
-          type="button"
-          className="icon-button"
-          onClick={onRefresh}
-          aria-label="Muat ulang data"
-        >
-          ↻
-        </button>
-      </div>
-
       <div className="phone-top-copy">
         <span className="section-label">Your expression</span>
         <h2 id="history-title">Journal and prediction history</h2>
@@ -46,10 +28,6 @@ export function HistoryPanel({
           tampilan yang lebih personal.
         </p>
       </div>
-
-      <article className="quote-card">
-        <p>{headlineNote}</p>
-      </article>
 
       <div className="history-toolbar">
         <label className="toolbar-field">
@@ -103,10 +81,6 @@ export function HistoryPanel({
                 <p>
                   Screen time {entry.dailyScreenTimeHours} jam · HP sebelum
                   tidur {entry.phoneUsageBeforeSleepMinutes} menit
-                </p>
-
-                <p>
-                  {entry.notes || "Tidak ada catatan tambahan pada entri ini."}
                 </p>
 
                 <div className="journal-meta">
