@@ -147,6 +147,21 @@ function App() {
     bootstrap();
   }, []);
 
+  // Reload data setiap kali currentUser berubah
+  useEffect(() => {
+    if (currentUser?.authenticated) {
+      // Reload dashboard dan history saat user berubah
+      Promise.all([
+        loadDashboard(),
+        loadHistory("")
+      ]);
+      setHistoryFilter("");
+    } else {
+      // Reset semua data saat logout
+      resetAllData();
+    }
+  }, [currentUser?.id]); // Watch ID user, bukan object reference
+
   async function loadCurrentUser() {
     if (!localStorage.getItem("token")) {
       return;
@@ -160,6 +175,27 @@ function App() {
       setCurrentUser(null);
       setShowApp(false);
     }
+  }
+
+  function resetAllData() {
+    // Reset dashboard
+    setDashboard(null);
+    setDashboardLoading(true);
+    setDashboardError("");
+    setLatestPrediction(null);
+
+    // Reset history
+    setHistoryEntries([]);
+    setHistoryMeta(defaultHistoryMeta);
+    setHistoryFilter("");
+    setHistoryLoading(true);
+    setHistoryError("");
+
+    // Reset form
+    setFormValues(createInitialFormValues(formMeta.fields));
+    setFormErrors({});
+    setSubmitError("");
+    setSuccessMessage("");
   }
 
   async function loadHealth() {
@@ -197,19 +233,17 @@ function App() {
 
     try {
       const response = await getDashboardSummary();
-      setDashboard(response.data);
+      setDashboard(response.data || null);
       if (response.data?.latestPrediction) {
         setLatestPrediction(
           (current) => current || response.data.latestPrediction,
         );
       }
     } catch (error) {
-      setDashboardError(
-        normalizeApiError(
-          error,
-          "Dashboard belum bisa memuat data dari backend.",
-        ),
-      );
+      // Jika error saat fetch, set dashboard to null tapi jangan show error message
+      // karena ini normal untuk akun baru
+      setDashboard(null);
+      console.error("Dashboard load error:", error);
     } finally {
       setDashboardLoading(false);
     }
@@ -228,9 +262,10 @@ function App() {
       setHistoryEntries(response.data || []);
       setHistoryMeta(response.meta || defaultHistoryMeta);
     } catch (error) {
-      setHistoryError(
-        normalizeApiError(error, "Riwayat prediksi belum bisa dimuat."),
-      );
+      // Jika error saat fetch, set entries kosong
+      setHistoryEntries([]);
+      setHistoryMeta(defaultHistoryMeta);
+      console.error("History load error:", error);
     } finally {
       setHistoryPending(false);
       setHistoryLoading(false);
@@ -332,6 +367,7 @@ function App() {
     setCurrentUser(null);
     setShowApp(false);
     setShowLogin(false);
+    resetAllData();
     window.history.replaceState(null, "", window.location.pathname);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
