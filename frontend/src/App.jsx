@@ -1,5 +1,6 @@
 import { startTransition, useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   ClipboardList,
@@ -103,8 +104,10 @@ function DashboardSidebar({ onAssessment, onLogout }) {
 }
 
 function App() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showApp, setShowApp] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isLoginRoute = location.pathname === "/login";
+  const isDashboardRoute = location.pathname === "/dashboard";
 
   const [currentUser, setCurrentUser] = useState(() => {
     const token = localStorage.getItem("token");
@@ -152,10 +155,7 @@ function App() {
   useEffect(() => {
     if (currentUser && localStorage.getItem("token")) {
       resetUserScopedData();
-      Promise.all([
-        loadDashboard(),
-        loadHistory("")
-      ]);
+      Promise.all([loadDashboard(), loadHistory("")]);
       setHistoryFilter("");
     }
   }, [currentUser?.id]); // Watch ID user, bukan object reference
@@ -171,7 +171,9 @@ function App() {
     } catch (error) {
       localStorage.removeItem("token");
       setCurrentUser(null);
-      setShowApp(false);
+      if (location.pathname === "/dashboard") {
+        navigate("/login", { replace: true });
+      }
     }
   }
 
@@ -343,11 +345,11 @@ function App() {
 
   function handleStartAssessment() {
     if (!currentUser) {
-      setShowLogin(true);
+      navigate("/login");
       return;
     }
 
-    setShowApp(true);
+    navigate("/dashboard");
 
     setTimeout(() => {
       document.getElementById("assessment")?.scrollIntoView({
@@ -366,18 +368,15 @@ function App() {
 
     localStorage.removeItem("token");
     setCurrentUser(null);
-    setShowApp(false);
-    setShowLogin(false);
     resetAllData();
-    window.history.replaceState(null, "", window.location.pathname);
+    navigate("/", { replace: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleLoginSuccess(user) {
     resetAllData();
     setCurrentUser(user);
-    setShowLogin(false);
-    setShowApp(true);
+    navigate("/dashboard", { replace: true });
 
     setTimeout(() => {
       document.getElementById("assessment")?.scrollIntoView({
@@ -388,27 +387,35 @@ function App() {
   }
 
   function scrollToAssessment() {
-  if (!currentUser) {
-    setShowLogin(true);
-    return;
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/dashboard");
+
+    setTimeout(() => {
+      document.getElementById("assessment")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
   }
 
-  setShowApp(true);
+  if (isDashboardRoute && !currentUser) {
+    return <Navigate to="/login" replace />;
+  }
 
-  setTimeout(() => {
-    document.getElementById("assessment")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, 100);
-}
+  if (isLoginRoute && currentUser) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div
-      className={`app-shell${showLogin ? " login-shell" : ""}${showApp ? " dashboard-shell" : ""}`}
+      className={`app-shell${isLoginRoute ? " login-shell" : ""}${isDashboardRoute ? " dashboard-shell" : ""}`}
       id="top"
     >
-      {!showLogin && (
+      {!isLoginRoute && (
         <>
           <div className="ambient-line ambient-line-one" aria-hidden="true" />
           <div className="ambient-line ambient-line-two" aria-hidden="true" />
@@ -416,35 +423,35 @@ function App() {
           <div className="ambient-glow ambient-glow-two" aria-hidden="true" />
         </>
       )}
-      <div className={`page-shell${showApp ? " dashboard-layout" : ""}`}>
-        {!showLogin && !showApp && (
+      <div className={`page-shell${isDashboardRoute ? " dashboard-layout" : ""}`}>
+        {!isLoginRoute && !isDashboardRoute && (
           <AppNavbar
             health={health}
-            showApp={showApp}
+            showApp={isDashboardRoute}
             onStart={scrollToAssessment}
             currentUser={currentUser}
             onLogout={handleLogout}
           />
         )}
 
-        {showApp && (
+        {isDashboardRoute && (
           <DashboardSidebar
             onAssessment={scrollToAssessment}
             onLogout={handleLogout}
           />
         )}
 
-        <main className={showApp ? "content-stack" : "landing-only"}>
-          {!showApp ? (
-  showLogin ? (
-    <LoginPage
-      onBack={() => setShowLogin(false)}
-      onLoginSuccess={handleLoginSuccess}
-    />
-  ) : (
-    <LandingPage health={health} onStart={scrollToAssessment} />
-  )
-) : (
+        <main className={isDashboardRoute ? "content-stack" : "landing-only"}>
+          {!isDashboardRoute ? (
+            isLoginRoute ? (
+              <LoginPage
+                onBack={() => navigate("/")}
+                onLoginSuccess={handleLoginSuccess}
+              />
+            ) : (
+              <LandingPage health={health} onStart={scrollToAssessment} />
+            )
+          ) : (
             <>
               <HeroSection
                 health={health}
